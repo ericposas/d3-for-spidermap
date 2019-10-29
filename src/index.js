@@ -5,14 +5,11 @@ import _ from 'lodash'
 import './airports.json'
 import './index.scss'
 
-// let svgSize = innerWidth * .65
-let w = innerWidth * .75, h = w
-let originLowerLimitX = (w * .2), originUpperLimitX = (w * .5)
-let originLowerLimitY = (w * .05), originUpperLimitY = (w * .2)
 
-let destLowerLimit = (w * .2), destUpperLimit = w - (w * .2)
+let svgArea = 500
+let svgMargin = 40
 document.getElementById('root').innerHTML += `
-  <svg id='svg-container' width=${w} height=${h} style='background-color:#ccc'></svg>
+  <svg id='svg-container' width=${svgArea} height=${svgArea} style='background-color:#ccc'></svg>
 `
 
 let origins
@@ -36,17 +33,25 @@ const getJSON = async () => {
 const run = () => {
   let svg = document.getElementById('svg-container')
   let _x = origins.map(d => d.longitude)
-  let _y = origins.map(d => d.latitude)
+  let _y = origins.map(d => d.latitude) //{ return d.latitude < 0 ? (d.latitude * -1) : (d.latitude * 2) })
   // sort values to figure out the greatest among them
   let _xSorted = _x.sort((a,b) => a - b)
-  let _ySorted = _y.sort((a,b) => a - b)
+  let _ySorted = _y.sort((a,b) => b - a) //.map(d => d * -1)
+  console.log(
+    _xSorted,
+    _ySorted
+  )
   // apply linearScales to our data to ensure that it fits our graph model
   let originScaleX = d3.scaleLinear()
                              .domain([_xSorted[0], _xSorted[_xSorted.length-1]])
-                             .range([originLowerLimitX, originUpperLimitX])
+                             .range([svgMargin, svgArea - svgMargin])
+  console.log(
+    _xSorted[0], _xSorted[_xSorted.length-1],
+    _ySorted[0], _ySorted[_ySorted.length-1],
+  )
   let originScaleY = d3.scaleLinear()
                              .domain([_ySorted[0], _ySorted[_ySorted.length-1]])
-                             .range([originLowerLimitY, originUpperLimitY])
+                             .range([svgMargin, svgArea - svgMargin])
 
   // let olat = originScaleX(d.latitude)
   // let olong = originScaleY(d.longitude)
@@ -56,19 +61,20 @@ const run = () => {
     svg.innerHTML += `
       <!--
       <g>
-        <circle cx=${w/2} cy=${w/2} r=${(w-4)/2} stroke='#000' fill='none'></circle>
+        <circle cx=${400/2} cy=${400/2} r=${(400-4)/2} stroke='#000' fill='none'></circle>
       </g>
       -->
       <g>
         <circle cx=${olongs[i]} cy=${olats[i]} r=${size/2} fill='#000'></circle>
-        <text x=${olongs[i] - size} y=${olats[i] - size} font-family='arial' font-size='0.5rem' fill='#000'>
+        <text x=${olongs[i] - size} y=${olats[i] - (size*5)} font-family='arial' font-size='0.5rem' fill='#000'>
           ${d.code ? d.code : d.four_digit_code}
         </text>
-        <!--
-        <text x=${olongs[i]} y=${olats[i] - (size*.5)} font-family='arial' font-size='0.5rem' fill='#000'>
-          lat: ${parseFloat(d.latitude).toFixed(2)}, &nbsp; long:${parseFloat(d.longitude).toFixed(2)}
+        <text x=${olongs[i] - size} y=${olats[i] - (size * 3)} font-family='arial' font-size='0.5rem' fill='#000'>
+          lat: ${parseFloat(d.latitude).toFixed(2)}
         </text>
-        -->
+        <text x=${olongs[i] - size} y=${olats[i] - size} font-family='arial' font-size='0.5rem' fill='#000'>
+          long:${parseFloat(d.longitude).toFixed(2)}
+        </text>
       </g>
     `
   })

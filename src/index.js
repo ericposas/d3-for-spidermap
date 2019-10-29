@@ -35,8 +35,8 @@ const getJSON = async () => {
 
 const run = () => {
   let svg = document.getElementById('svg-container')
-  let _x = origins.map(d => d.latitude)
-  let _y = origins.map(d => d.longitude)
+  let _x = origins.map(d => d.longitude)
+  let _y = origins.map(d => d.latitude)
   // sort values to figure out the greatest among them
   let _xSorted = _x.sort((a,b) => a - b)
   let _ySorted = _y.sort((a,b) => a - b)
@@ -50,8 +50,8 @@ const run = () => {
 
   // let olat = originScaleX(d.latitude)
   // let olong = originScaleY(d.longitude)
-  let olats = origins.map(d => originScaleX(d.latitude))
-  let olongs = origins.map(d => originScaleY(d.longitude))
+  let olats = origins.map(d => originScaleY(d.latitude)) // y is lat, x is long
+  let olongs = origins.map(d => originScaleX(d.longitude))
   origins.forEach((d,i) => {
     svg.innerHTML += `
       <!--
@@ -60,12 +60,12 @@ const run = () => {
       </g>
       -->
       <g>
-        <circle cx=${olats[i]} cy=${olongs[i]} r=${size/2} fill='#000'></circle>
-        <text x=${olats[i] - size} y=${olongs[i] - size} font-family='arial' font-size='0.5rem' fill='#000'>
+        <circle cx=${olongs[i]} cy=${olats[i]} r=${size/2} fill='#000'></circle>
+        <text x=${olongs[i] - size} y=${olats[i] - size} font-family='arial' font-size='0.5rem' fill='#000'>
           ${d.code ? d.code : d.four_digit_code}
         </text>
         <!--
-        <text x=${olats[i]} y=${olongs[i] - (size*.5)} font-family='arial' font-size='0.5rem' fill='#000'>
+        <text x=${olongs[i]} y=${olats[i] - (size*.5)} font-family='arial' font-size='0.5rem' fill='#000'>
           lat: ${parseFloat(d.latitude).toFixed(2)}, &nbsp; long:${parseFloat(d.longitude).toFixed(2)}
         </text>
         -->

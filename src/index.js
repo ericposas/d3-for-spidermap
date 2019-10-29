@@ -60,7 +60,7 @@ const run = () => {
       </g>
       -->
       <g>
-        <rect x=${olats[i]} y=${olongs[i]} width=${size} height=${size} fill='#000'></rect>
+        <circle cx=${olats[i]} cy=${olongs[i]} r=${size/2} fill='#000'></circle>
         <text x=${olats[i] - size} y=${olongs[i] - size} font-family='arial' font-size='0.5rem' fill='#000'>
           ${d.code ? d.code : d.four_digit_code}
         </text>

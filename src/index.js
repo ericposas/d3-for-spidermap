@@ -5,10 +5,10 @@ import _ from 'lodash'
 import './airports.json'
 import './index.scss'
 
-let svgArea = 600
-let svgMargin = 100
+let svgArea = {w:1200, h:1000}
+let svgMargin = 150
 document.getElementById('root').innerHTML += `
-  <svg id='svg-container' width=${svgArea} height=${svgArea} style='background-color:#ccc'></svg>
+  <svg id='svg-container' width=${svgArea.w} height=${svgArea.h} style='background-color:#ccc'></svg>
 `
 let svg = document.getElementById('svg-container')
 let size = 4 // location circle/dot size
@@ -18,9 +18,11 @@ let originsToDestinations = {} // destinations will be arrays inside the origins
 // will be useful to create a UI slider that can adjust the range and domain dynamically
 let linearScaleX, linearScaleY
 let drawnLocations = []
-let xDomainMin = [-110, -70], xDomainExpanded = [-180, -20]
-let yDomainMin = [40, 20], yDomainExpanded = [150, 0]
+let xDomainMin = [-115, -75], xDomainExpanded = [-180, -20]
+let yDomainMin = [50, 0], yDomainExpanded = [150, 0]
 let xDomain = xDomainMin, yDomain = yDomainMin
+
+let bezCurveAmt = svgArea.w/10
 
 const getDataAndSetup = async () => {
   try {
@@ -29,17 +31,18 @@ const getDataAndSetup = async () => {
     // set random set of destinations per origin
     origins.forEach(d => {
       let randomDestinations = _.shuffle(data.data).slice(0, random.int(1, 6))
+      // filter randomDestinations to not include the origin point
+      randomDestinations = randomDestinations.filter((rand, i) => randomDestinations.indexOf(d) != i)
       originsToDestinations[d.code] = randomDestinations
       // if () {xDomain = xDomainExpanded} else {xDomain = xDomainMin}
-
     })
     console.log(origins, originsToDestinations)
     linearScaleX = d3.scaleLinear()
                                .domain(xDomain)
-                               .range([svgMargin, svgArea - svgMargin])
+                               .range([svgMargin, (svgArea.w) - svgMargin])
     linearScaleY = d3.scaleLinear()
                                .domain(yDomain)
-                               .range([svgMargin, svgArea - svgMargin])
+                               .range([svgMargin, (svgArea.h) - svgMargin])
   } catch (e) { console.log(e) }
 }
 
@@ -53,7 +56,8 @@ const skiMap = async () => {
     // let tY = oY - (size*3.5)
     svg.innerHTML += `
       <g>
-        <circle cx=${oX} cy=${oY} r=10 fill='none' stroke='red'></circle>
+        <circle cx=${oX} cy=${oY} r=12 fill='none' stroke='red'></circle>
+        <circle cx=${oX} cy=${oY} r=4 fill='red' stroke='black'></circle>
       </g>
     `
     // <!-- <text x=${tX} y=${tY} font-family='arial' font-size='0.5rem' fill='red'>${origins[o].code}</text> -->
@@ -64,17 +68,28 @@ const skiMap = async () => {
     // sort values to figure out the greatest among them
     let _xSorted = _x.sort((a,b) => a - b)
     let _ySorted = _y.sort((a,b) => a - b)
-    let olats = originsToDestinations[origin].map(d => linearScaleY(d.latitude))
     let olongs = originsToDestinations[origin].map(d => linearScaleX(d.longitude))
+    let olats = originsToDestinations[origin].map(d => linearScaleY(d.latitude))
     // console.log(originsToDestinations[origin][i])
     // plot each destination for each origin location
+    let curveAmt = .35
     olats.forEach((l, i) => {
-      console.log(_.includes(drawnLocations, originsToDestinations[origin][i].code))
+      let dx1 = oX > olongs[i] ? oX + (olongs[i] * curveAmt) : oX - (olongs[i] * curveAmt)
+      let dy1 = oY > olats[i] ? oY - (olats[i] * curveAmt) : oY + (olats[i] * curveAmt)
+      // oX and oY are normalized values bc of the linearScale() func
+      let dx2 = oX > olongs[i] ? olongs[i] + (olongs[i] * curveAmt) : olongs[i] - (olongs[i] * curveAmt)
+      let dy2 = oY > olats[i] ? olats[i] - (olats[i] * curveAmt) : olats[i] + (olats[i] * curveAmt)
+      // let dy2 = oY > 0 ? oY + bezCurveAmt : oY - bezCurveAmt
+      // ${oX/olongs[i]},${oY/olats[i]}
+      // console.log(_.includes(drawnLocations, originsToDestinations[origin][i].code))
       if (!_.includes(drawnLocations, originsToDestinations[origin][i].code)) {
         drawnLocations = drawnLocations.concat(originsToDestinations[origin][i].code)
         svg.innerHTML += `
           <g>
             <circle cx=${olongs[i]} cy=${olats[i]} r=${size/2} fill='#000'></circle>
+            <path
+              d=" M ${oX},${oY}
+                  C ${dx1},${dy1} ${dx2},${dy2} ${olongs[i]},${olats[i]}" fill='none' stroke='#000'></path>
             <text x=${olongs[i] - size} y=${olats[i] - (size*5)} font-family='arial' font-size='0.5rem' fill='#000'>
               ${originsToDestinations[origin][i].code ? originsToDestinations[origin][i].code : originsToDestinations[origin][i].icao}
             </text>
@@ -87,7 +102,7 @@ const skiMap = async () => {
           </g>
         `
       }
-      console.log(drawnLocations)
+      // console.log(drawnLocations)
     })
   })
 }

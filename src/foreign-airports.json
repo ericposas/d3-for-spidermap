@@ -1,0 +1,5 @@
+[
+  {"_id":"5db896eb2e3f9150b8bb042d","code":"NRT","fullname":"Narita Intl. Airport","region":"Japan","city":"Tokyo","latitude":36.7744693,"longitude":140.3887933,"createdAt":"2019-10-29T19:45:47.214Z","updatedAt":"2019-10-29T19:45:47.317Z","__v":0,"id":"5db896eb2e3f9150b8bb042d"},
+  {"_id":"5db896ac2e3f9150b8bb042c","city":"London","fullname":"Heathrow Airport","code":"LHR","region":"United Kingdom","latitude":51.4699249,"longitude":-0.460024,"createdAt":"2019-10-29T19:44:44.919Z","updatedAt":"2019-10-29T19:44:45.028Z","__v":0,"id":"5db896ac2e3f9150b8bb042c"},
+  {"_id":"5db891f12e3f9150b8bb0428","city":"Nassau","region":"Bahamas","code":"NAS","fullname":"Lynden Pindling Intl. Airport","latitude":25.0506846,"longitude":-77.4665016,"createdAt":"2019-10-29T19:24:33.029Z","updatedAt":"2019-10-29T19:24:33.151Z","__v":0,"id":"5db891f12e3f9150b8bb0428"}
+]

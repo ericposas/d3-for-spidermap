@@ -5,7 +5,7 @@ import _ from 'lodash'
 import './airports.json'
 import './index.scss'
 
-let svgArea = {w:1200, h:1000}
+let svgArea = {w:1000, h:1400}
 let svgMargin = 150
 document.getElementById('root').innerHTML += `
   <svg id='svg-container' width=${svgArea.w} height=${svgArea.h} style='background-color:#ccc'></svg>
@@ -42,7 +42,7 @@ const getDataAndSetup = async () => {
                                .range([svgMargin, (svgArea.w) - svgMargin])
     linearScaleY = d3.scaleLinear()
                                .domain(yDomain)
-                               .range([svgMargin, (svgArea.h) - svgMargin])
+                               .range([(svgMargin * 2), (svgArea.h) - svgMargin])
   } catch (e) { console.log(e) }
 }
 
@@ -82,14 +82,15 @@ const skiMap = async () => {
       // let dy2 = oY > 0 ? oY + bezCurveAmt : oY - bezCurveAmt
       // ${oX/olongs[i]},${oY/olats[i]}
       // console.log(_.includes(drawnLocations, originsToDestinations[origin][i].code))
+      svg.innerHTML += `
+        <path
+          d="M ${oX},${oY}
+             C ${dx1},${dy1} ${dx2},${dy2} ${olongs[i]},${olats[i]}" fill='none' stroke='#000'></path>`
       if (!_.includes(drawnLocations, originsToDestinations[origin][i].code)) {
         drawnLocations = drawnLocations.concat(originsToDestinations[origin][i].code)
         svg.innerHTML += `
           <g>
             <circle cx=${olongs[i]} cy=${olats[i]} r=${size/2} fill='#000'></circle>
-            <path
-              d=" M ${oX},${oY}
-                  C ${dx1},${dy1} ${dx2},${dy2} ${olongs[i]},${olats[i]}" fill='none' stroke='#000'></path>
             <text x=${olongs[i] - size} y=${olats[i] - (size*5)} font-family='arial' font-size='0.5rem' fill='#000'>
               ${originsToDestinations[origin][i].code ? originsToDestinations[origin][i].code : originsToDestinations[origin][i].icao}
             </text>

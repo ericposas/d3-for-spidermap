@@ -2,11 +2,13 @@ import * as d3 from 'd3'
 import random from 'random'
 import axios from 'axios'
 import _ from 'lodash'
-import './airports.json'
+import './airports-domestic.json'
+import './airports-foreign.json'
+import './airports-domestic-and-foreign.json'
 import './index.scss'
 
-let svgArea = {w:1000, h:1400}
-let svgMargin = 150
+let svgArea = {w:1200, h:800}
+let svgMargin = svgArea.w/5
 document.getElementById('root').innerHTML += `
   <svg id='svg-container' width=${svgArea.w} height=${svgArea.h} style='background-color:#ccc'></svg>
 `
@@ -18,36 +20,66 @@ let originsToDestinations = {} // destinations will be arrays inside the origins
 // will be useful to create a UI slider that can adjust the range and domain dynamically
 let linearScaleX, linearScaleY
 let drawnLocations = []
-let xDomainMin = [-115, -75], xDomainExpanded = [-180, -20]
-let yDomainMin = [50, 0], yDomainExpanded = [150, 0]
-let xDomain = xDomainMin, yDomain = yDomainMin
+// let xDomainMin = [-115, -75], xDomainExpanded = [-180, -20]
+// let yDomainMin = [50, 0], yDomainExpanded = [150, 0]
+// let xDomain = xDomainMin, yDomain = yDomainMin
+let allLongs = [], allLats = []
 
-let bezCurveAmt = svgArea.w/10
+const calcMinMaxLongs = arr => {
+  allLongs = allLongs.concat(arr)
+  allLongs = arr.sort((a, b) => a - b)
+  linearScaleX = d3.scaleLinear()
+                             .domain([allLongs[0], allLongs[allLongs.length-1]])
+                             .range([svgMargin, svgArea.w - svgMargin])
+}
+
+const calcMinMaxLats = arr => {
+  allLats = allLats.concat(arr)
+  allLats = arr.sort((a, b) => b - a)
+  linearScaleY = d3.scaleLinear()
+                             .domain([allLats[0], allLats[allLats.length-1]])
+                             .range([svgMargin, svgArea.h - svgMargin])
+}
 
 const getDataAndSetup = async () => {
   try {
-    let data = await axios.get('./json/airports.json')
-    origins = _.shuffle(data.data).slice(0, 5) // assign 5 random origins
+    let data = await axios.get('./json/airports-domestic.json')
+    origins = _.shuffle(data.data).slice(0, 3) // assign 5 random origins
     // set random set of destinations per origin
     origins.forEach(d => {
-      let randomDestinations = _.shuffle(data.data).slice(0, random.int(1, 6))
+      let randomDestinations = _.shuffle(data.data).slice(1, random.int(2, 4))
       // filter randomDestinations to not include the origin point
       randomDestinations = randomDestinations.filter((rand, i) => randomDestinations.indexOf(d) != i)
       originsToDestinations[d.code] = randomDestinations
       // if () {xDomain = xDomainExpanded} else {xDomain = xDomainMin}
     })
-    console.log(origins, originsToDestinations)
-    linearScaleX = d3.scaleLinear()
-                               .domain(xDomain)
-                               .range([svgMargin, (svgArea.w) - svgMargin])
-    linearScaleY = d3.scaleLinear()
-                               .domain(yDomain)
-                               .range([(svgMargin * 2), (svgArea.h) - svgMargin])
+    console.log(originsToDestinations)
+    // linearScaleX = d3.scaleLinear()
+    //                            .domain(xDomain)
+    //                            .range([svgMargin, (svgArea.w) - svgMargin])
+    // linearScaleY = d3.scaleLinear()
+    //                            .domain(yDomain)
+    //                            .range([svgMargin, (svgArea.h) - svgMargin])
   } catch (e) { console.log(e) }
+}
+
+const calculateRange = () => {
+  let longsArr = [], latsArr = []
+  Object.keys(originsToDestinations).forEach((origin, o) => {
+    let _x = originsToDestinations[origin].map(d => d.longitude)
+    let _y = originsToDestinations[origin].map(d => d.latitude)
+    _x = _x.concat(origins[o].longitude)
+    _y = _y.concat(origins[o].latitude)
+    longsArr = longsArr.concat(_x)
+    latsArr = latsArr.concat(_y)
+  })
+  calcMinMaxLongs(longsArr)
+  calcMinMaxLats(latsArr)
 }
 
 const skiMap = async () => {
   await getDataAndSetup()
+  calculateRange()
   Object.keys(originsToDestinations).forEach((origin, o) => {
     // draw origin in different style so we can line to and from them later
     let oX = linearScaleX(origins[o].longitude)

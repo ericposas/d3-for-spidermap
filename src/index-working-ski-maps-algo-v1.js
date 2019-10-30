@@ -43,9 +43,7 @@ const calcMinMaxLats = arr => {
 
 const getDataAndSetup = async () => {
   try {
-    let data = await axios.get('./json/airports-domestic-and-foreign.json')
-    // alter JFK airport lat, long to prevent collision with LGA
-    data.data.forEach(datum => { if (datum.code == 'JFK') datum.latitude += 2 })
+    let data = await axios.get('./json/airports-domestic.json')
     origins = _.shuffle(data.data).slice(0, 3) // assign 5 random origins
     // set random set of destinations per origin
     origins.forEach(d => {
@@ -88,26 +86,10 @@ const skiMap = async () => {
     let oY = linearScaleY(origins[o].latitude)
     // let tX = oX - (size*2)
     // let tY = oY - (size*3.5)
-    let originRadius = 4
     svg.innerHTML += `
       <g>
-        <!-- <defs>
-          <path id='textPath1' d="M${oX},${oY} H200 M${oX},${oY} H200"></path>
-        </defs> -->
-        <circle cx=${oX} cy=${oY} r=20 fill='red' opacity='0.1' stroke='none'></circle>
-        <circle cx=${oX} cy=${oY} r=20 fill='none' stroke='red'></circle>
-        <circle cx=${oX} cy=${oY} r=${originRadius} fill='red' stroke='black'></circle>
-        <text x=${oX + (originRadius * 6)} y=${oY + originRadius} font-family='arial' font-size='.75rem'>
-          ${origins[o].fullname}
-        </text>
-        <!--
-        <use xlink:href='#textPath1' stroke='blue'/>
-        <text x=${oX + (originRadius * 6)} y=${oY + originRadius} font-family='arial' font-size='.75rem'>
-          <textPath xlink:href='#textPath1'>
-            ${origins[o].fullname}
-          </textPath>
-        </text>
-        -->
+        <circle cx=${oX} cy=${oY} r=12 fill='none' stroke='red'></circle>
+        <circle cx=${oX} cy=${oY} r=4 fill='red' stroke='black'></circle>
       </g>
     `
     // <!-- <text x=${tX} y=${tY} font-family='arial' font-size='0.5rem' fill='red'>${origins[o].code}</text> -->
@@ -141,17 +123,15 @@ const skiMap = async () => {
         svg.innerHTML += `
           <g>
             <circle cx=${olongs[i]} cy=${olats[i]} r=${size/2} fill='#000'></circle>
-            <text x=${olongs[i] - size} y=${olats[i] - (size * 1.5)} font-family='arial' font-size='0.5rem' fill='#000'>
+            <text x=${olongs[i] - size} y=${olats[i] - (size*5)} font-family='arial' font-size='0.5rem' fill='#000'>
               ${originsToDestinations[origin][i].code ? originsToDestinations[origin][i].code : originsToDestinations[origin][i].icao}
             </text>
-            <!--
             <text x=${olongs[i] - size} y=${olats[i] - (size * 3)} font-family='arial' font-size='0.5rem' fill='#000'>
               lat: ${parseFloat(originsToDestinations[origin][i].latitude).toFixed(2)}
             </text>
             <text x=${olongs[i] - size} y=${olats[i] - size} font-family='arial' font-size='0.5rem' fill='#000'>
               long:${parseFloat(originsToDestinations[origin][i].longitude).toFixed(2)}
             </text>
-            -->
           </g>
         `
       }

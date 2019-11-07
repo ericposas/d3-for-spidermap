@@ -104,7 +104,7 @@ const skiMap = async () => {
     let olats = originsToDestinations[origin].map(d => linearScaleY(d.latitude))
     // console.log(originsToDestinations[origin][i])
     // plot each destination for each origin location
-    let curveAmt = .1
+    let curveAmt = .2
     olats.forEach((l, i) => {
       let dx1 = oX > olongs[i] ? oX + (olongs[i] * curveAmt) : oX - (olongs[i] * curveAmt)
       let dy1 = oY > olats[i] ? oY - (olats[i] * curveAmt) : oY + (olats[i] * curveAmt)
